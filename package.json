@@ -1,0 +1,15 @@
+{
+  "name": "districtapi",
+  "version": "0.1.0",
+  "description": "Official Node.js SDK for districtapi.dev — US school district and school data API",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": ["school", "district", "nces", "education", "api"],
+  "author": "DistrictAPI <hello@districtapi.dev>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DistrictAPI/districtapi-node.git"
+  },
+  "homepage": "https://districtapi.dev"
+}
