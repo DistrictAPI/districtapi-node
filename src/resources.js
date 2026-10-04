@@ -1,5 +1,23 @@
 'use strict';
 
+// Identifiers are interpolated into the request path, and the URL parser
+// collapses ".." segments, so an unvalidated id such as
+// "../../v2/internal/admin" would send the request, with the caller's API
+// key, to a different path on the API host; "?" and "#" would inject a query
+// string or fragment. Allowlist rather than blocklist: every real identifier
+// is alphanumeric with optional "-"/"_".
+const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
+/** Return the identifier as a string, or throw if it could escape the path. */
+function safeId(value, field) {
+  const id = typeof value === 'number' ? String(value) : value;
+  if (typeof id !== 'string' || !SAFE_ID.test(id)) {
+    const shown = typeof value === 'string' ? JSON.stringify(value) : typeof value;
+    throw new TypeError(`${field} must contain only letters, digits, '-' or '_' (got ${shown})`);
+  }
+  return id;
+}
+
 class DistrictResource {
   /** @param {Function} request */
   constructor(request) {
@@ -33,7 +51,7 @@ class DistrictResource {
    * @returns {Promise<Object>}
    */
   async fetch(ncesId) {
-    const body = await this._req('GET', `/v1/districts/${ncesId}`);
+    const body = await this._req('GET', `/v1/districts/${safeId(ncesId, 'ncesId')}`);
     return body.data;
   }
 
@@ -44,7 +62,7 @@ class DistrictResource {
    * @returns {Promise<Object[]>}
    */
   async schools(ncesId) {
-    const body = await this._req('GET', `/v1/districts/${ncesId}/schools`);
+    const body = await this._req('GET', `/v1/districts/${safeId(ncesId, 'ncesId')}/schools`);
     return body.data;
   }
 
@@ -115,7 +133,7 @@ class SchoolResource {
    * @returns {Promise<Object>}
    */
   async fetch(ncesId) {
-    const body = await this._req('GET', `/v1/schools/${ncesId}`);
+    const body = await this._req('GET', `/v1/schools/${safeId(ncesId, 'ncesId')}`);
     return body.data;
   }
 
@@ -146,7 +164,7 @@ class SchoolResource {
    * @returns {Promise<Object>}
    */
   async district(ncesId) {
-    const body = await this._req('GET', `/v1/schools/${ncesId}/district`);
+    const body = await this._req('GET', `/v1/schools/${safeId(ncesId, 'ncesId')}/district`);
     return body.data;
   }
 }
