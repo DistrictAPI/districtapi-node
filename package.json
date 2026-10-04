@@ -1,6 +1,6 @@
 {
   "name": "districtapi",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Official Node.js SDK for districtapi.dev — US school district and school data API",
   "main": "index.js",
   "scripts": {
