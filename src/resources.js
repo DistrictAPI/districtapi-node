@@ -67,6 +67,39 @@ class DistrictResource {
     const body = await this._req('GET', '/v1/districts/search', p);
     return body.data;
   }
+
+  /**
+   * Resolve up to 100 (Pro) or 500 (Growth) addresses to districts in one call.
+   * Requires a Pro or Growth API key. Each address costs 1 credit.
+   * Results are returned in the same order as the input.
+   *
+   * @param {(string | {address: string, ref?: string})[]} addresses
+   * @returns {Promise<Array<{address: string, ref: string|null, ok: boolean, district: Object[]|null, error?: string}>>}
+   *
+   * @example
+   * const results = await client.districts.batch([
+   *   '1600 Pennsylvania Ave NW, DC',
+   *   { address: '14901 Dale Evans Pkwy, Apple Valley CA', ref: 'user-42' },
+   * ]);
+   * for (const r of results) {
+   *   if (r.ok) console.log(r.ref, r.district[0].name);
+   *   else      console.warn(r.address, r.error);
+   * }
+   */
+  async batch(addresses) {
+    if (!Array.isArray(addresses) || addresses.length === 0) {
+      throw new TypeError('batch() requires a non-empty array of addresses');
+    }
+    const items = addresses.map((raw) => {
+      if (typeof raw === 'string') return { address: raw };
+      if (raw && typeof raw === 'object' && typeof raw.address === 'string') {
+        return { address: raw.address, ref: raw.ref ?? null };
+      }
+      throw new TypeError('batch items must be a string or { address, ref? }');
+    });
+    const body = await this._req('POST', '/v1/districts/batch', { addresses: items });
+    return body.data;
+  }
 }
 
 class SchoolResource {

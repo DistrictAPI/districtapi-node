@@ -2,7 +2,7 @@
 
 const { DistrictAPIError, NotFoundError, AuthenticationError, RateLimitError, InvalidParamsError } = require('./errors');
 
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 
 /**
  * Make an authenticated request to the DistrictAPI.
@@ -17,7 +17,18 @@ const VERSION = '0.2.0';
  */
 async function request(baseUrl, apiKey, timeout, method, path, params) {
   const url = new URL(path, baseUrl);
-  if (params) {
+  const headers = {
+    'X-API-Key': apiKey,
+    'User-Agent': `districtapi-node/${VERSION}`,
+    'Accept': 'application/json',
+  };
+  let reqBody;
+
+  // POST sends `params` as a JSON body. GET/others send them as query string.
+  if (method === 'POST' && params !== undefined) {
+    reqBody = JSON.stringify(params);
+    headers['Content-Type'] = 'application/json';
+  } else if (params) {
     for (const [k, v] of Object.entries(params)) {
       if (v !== undefined && v !== null) {
         url.searchParams.set(k, String(v));
@@ -32,11 +43,8 @@ async function request(baseUrl, apiKey, timeout, method, path, params) {
   try {
     res = await fetch(url.toString(), {
       method,
-      headers: {
-        'X-API-Key': apiKey,
-        'User-Agent': `districtapi-node/${VERSION}`,
-        'Accept': 'application/json',
-      },
+      headers,
+      body: reqBody,
       signal: controller.signal,
     });
   } catch (err) {
